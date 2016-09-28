@@ -15,23 +15,35 @@ describes a many-to-many relationship for `Profiles`, `Movies` and `Favorites`
 join table with references to `Movies` and `Profiles`.
 
 ```sh
-  # < Your Response Here >
+Profiles--Favorites--Movies
+
+A profile can have many favorites and a movie can have many profiles through
+favorites.
+
 ```
 
 1.  For the above example, what needs to be added to the Model files?
 
 ```rb
 class Profile < ActiveRecord::Base
+  has_many :movies, through: :favorites
+  has_many :favorites, dependent: :destroy
+end
 end
 ```
 
 ```rb
 class Movie < ActiveRecord::Base
+  has_many :profiles, through: :favorites
+  has_many :favorites, dependent: :destroy
+end
 end
 ```
 
 ```rb
 class Favorite < ActiveRecord::Base
+  belongs to :profile, inverse_of: :favorites
+  belongs to :movie, inverse_of :favorites
 end
 ```
 
@@ -40,11 +52,13 @@ like to show all movies favorited by a profile on
 `http://localhost:3000/profiles/1`
 
 ```sh
-  # < Your Response Here >
+  A serializer provides a way to create a custom view of the data you want to show from
+  specific tables.
 ```
 
 ```rb
 class ProfileSerializer < ActiveModel::Serializer
+  attributes :given_name, :surname, :favorites
 end
 ```
 
@@ -52,13 +66,21 @@ end
 the above `Movies` and `Profiles`.
 
 ```sh
-  # < Your Response Here >
+bundle exec rails g scaffold Favorites user:string movie_name:string profile:references movie:references
 ```
 
 1.  What is `Dependent: Destroy` and where/why would we use it?
 
 ```sh
-  # < Your Response Here >
+  Dependent: Destroy is used to delete an association with tables. For instance,
+  if a patient moved, we would want to delete their record, along with any
+  appointments that were associated with that patient. You would add dependent: Destroy
+  in the model of the patient
+
+  class Patient < ActiveRecord::Base
+  has_many :doctors, through: :appointments
+  has_many :appointments, dependent: :destroy
+end
 ```
 
 1.  Think of **ANY** example where you would have a one-to-many relationship as well
@@ -66,5 +88,7 @@ as a many-to-many relationship in an application. You only need to list the
 description about the resources and how they relate to one another.
 
 ```sh
-  # < Your Response Here >
+ One to many:  An author can have many books.
+ Many to many: Books can have many borrowers and borrowers can have many books
+ through loans.
 ```
